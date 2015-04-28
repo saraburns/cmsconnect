@@ -1,4 +1,4 @@
-use sburns_db;
+use cmsconnect_db;
 
 drop table if exists humans;
 drop table if exists pieces;
@@ -16,13 +16,15 @@ create table humans (
 	status enum('student','coach'),
 	ingroup boolean,
 	admin boolean,
-	yr year(4)
+	yr year(4),
+	identifier varchar(75) not null
 	)
 	-- table constraints follow
 	ENGINE = InnoDB;
 	
-INSERT into humans values ('B20716868', 'sburns@wellesley.edu', 'ch@mb3r Mus1c', 'clarinet', 'student', false, false, 2016);
-INSERT into humans values ('B20702161', 'swang8@wellesley.edu', 'gingerbeard', 'flute', 'student', false, false, 2016);
+INSERT into humans values ('B20716868', 'sburns@wellesley.edu', 'ch@mb3r Mus1c', 'clarinet', 'student', false, false, 2016,'Sara Burns');
+INSERT into humans values ('B20702161', 'swang8@wellesley.edu', 'gingerbeard', 'flute', 'student', false, false, 2016, 'Shelley Wang');
+INSERT into humans values ('B12020349', 'kmatasy@wellesley.edu', 'c00lclarinets', 'clarinet', 'coach', false, false, null, 'Kathy Matasy');
 -- Creates a many-to-many relationship between people and their available time slots,
 -- Sunday-Saturday, 7AM-11PM (15 hours/day, 7 days/week) for usage in comparing schedules
 create table schedule (
@@ -41,11 +43,14 @@ INSERT into schedule values ('B20703151', '103');
 create table groups (
 	groupid smallint auto_increment not null primary key,
 	meetingtime char(3), -- meeting times may begin unestablished
-	rehearsaltime char(3) 
+	rehearsaltime char(3),
+	coach char(9),
+	INDEX(coach),
+	foreign key (coach) references humans(bnumber) on delete set null 
 	)
 	ENGINE = InnoDB;
 
-INSERT into groups values (1,'103', '104');
+INSERT into groups values (1,'103', '104','B12020349');
 -- join table to show potential many-to-many relationship for members in a group	
 create table members (
 	bnumber char(9) not null,
@@ -71,6 +76,7 @@ create table pieces (
 	ENGINE = InnoDB;
 
 INSERT into pieces values (1,'Divertimento III', '1803-00-00', 'Wolfgang Amadeus Mozart', 1); 
+
 -- allows a piece to be composed for multiple instruments
 create table instrumentation (
 	pid int not null,

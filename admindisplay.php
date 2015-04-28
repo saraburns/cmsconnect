@@ -1,13 +1,9 @@
-<!-- admin.php 
-	Sara Burns and Shelley Wang
-	This page is the admin dashboard, seen by an admin user when they first log in.
-	From here, the admin can view and search all the members of CMS, all the groups, and all the pieces
-	in the CMS library. It links to a page where they can create groups. -->
 <?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
  	<head>
 	<title>CS 304: WMDB</title>
+	<!--Sara Burns & Shelley Wang-->
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,19 +23,14 @@
 		
 
 	 <script type="text/javascript">
-
 		$(document).ready(
-			function () {
-				if(typeof(selected) == "undefined"){
-					$.post("http://cs.wellesley.edu/~cmsconnect/cmsconnect/listview.php", 
-					{"category": "groups"}, function(data){console.log(data);$("#resultList").empty().html(data);});
-				}else{
-					$.post("http://cs.wellesley.edu/~cmsconnect/cmsconnect/listview.php", 
-					{"category": selected}, function(data){console.log(data);$("#resultList").empty().html(data);});
-
-				}
-			}
-		);
+		function(){
+		    $("#myTab a").click(function(e){
+		    	e.preventDefault();
+		    	$(this).tab('show');
+		    });
+		}
+  });
 
 		 
 
@@ -89,7 +80,39 @@
 		</style>
   </head>
   <body>
-<!-- if the user is signed in, their email will appear at the top -->
+<?php 
+//These files provides us the credentials and methods to work with our mysql database via MDB2
+require_once("MDB2.php");
+require_once("/home/cs304/public_html/php/MDB2-functions.php");
+require_once("cmsconnect-dsn.inc");
+
+//connect to the db and return a db handle
+$dbh = db_connect($cmsconnect_dsn);
+$script = $_SERVER['PHP_SELF'];
+$coach_query = "SELECT identifier from humans where bnumber = (SELECT coach from groups where groupid = ?)";
+
+function populateList($category){
+	global $dbh;
+	$listcontents = "";
+	$list_query = "";
+	if($category == "groups"){
+		$list_query = "SELECT composer,yr,currentgroup from pieces where currentgroup is not null";
+		$resultset = query($dbh, $list_query);
+		while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    		$composer = $row['composer'];
+    		$yr = $row['year'];
+    		$currentgroup = $row['currentgroup'];
+    		$coach_name = prepared_query($dbh, $person_query, array($currentgroup));
+    		$listcontents += "<a href='$script?groupid=$currentgroup' class='list-group-item'>$composer($yr): $coach_name</a>";
+ 		}
+ 	}
+
+ 		return $listcontents;
+
+}
+if(isset($_REQUEST['category'])) populateList($_REQUEST['category']);
+
+?>
 <div class='row'>
 <div class = 'col-md-1'><?php if(isset($_SESSION['email'])) echo 
 "Hello ".$_SESSION['email']; ?></div>				<div class='col-md-1 col-md-offset-11'><a href="#">Admin</a>/<a href="#">Logout</a></div>
@@ -133,7 +156,10 @@
 </ol>		     
 <p>
 	<div class="list-group" id="resultList" style="max-height:420px;overflow-y:auto;">
-					  
+					  <a href="#sectionB" class="list-group-item active">
+					    Cras justo odio
+					  </a>
+					  <a href="#sectionA" class="list-group-item">Dapibus ac facilisis in</a>
 	</div>
 </div>
 
@@ -144,28 +170,22 @@
 <!--XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->					
 <div class="panel panel-default">
   <div class="panel-body" style="height: 500px;">
-  	<a href="#" class="btn btn-default">Create Group</a>
     <?php
-
-		require_once("MDB2.php");
-		require_once("/home/cs304/public_html/php/MDB2-functions.php");
-		require_once("cmsconnect-dsn.inc");
-
-		//connect to the db and return a db handle
-		$dbh = db_connect($cmsconnect_dsn);
-		$script = $_SERVER['PHP_SELF'];
-
     	//displays the profile of a group
     	if (isset($_GET['groupid'])) {
+			// CASE 2
+			// Directs to appropriate page if specific movie is clicked.
 			$groupid = $_GET['groupid'];
 
 			$values = array($groupid,$groupid);
-			// Query to display group info, collects info about members and the piece based on groupid
+			// Query to display title & release year of movie
 			$sql = "SELECT composer,title,pid,meetingtime,rehearsaltime,coach,identifier FROM pieces inner join groups inner join humans 
 					where groupid=? and bnumber=(select coach from groups where groupid=?)";
 			$resultset = prepared_query($dbh,$sql,$values);
+			// declare variable title for global usage
+			//$title;
 
-			// Display piece, meeting time, rehearsal time, and coach
+			// Display Group ID, Piece, Coach, Meeting Time, and Rehearsal Time
 			while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
 				//global $title;
 				$composer = $row['composer'];
@@ -190,29 +210,35 @@
 			$resultset = prepared_query($dbh,$sql,$values2);
 			$nr = $resultset->numRows();
 			if ($nr > 0) {
+				// Display cast only if it has a cast
 				while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
 					$bnumber = $row['bnumber'];
 					$identifier = $row['identifier'];
-					
-					echo "<li><a href='admin.php?bnumber=$bnumber'>$identifier</a></li>\n";
-				} 
+					// we didn't have to pull out the data into variables, but doing so
+					// makes the following line easy to read:
+					echo "<li><a href='admindisplay.php?bnumber=$bnumber'>$identifier</a></li>\n";
+				} // call to actorList function
 			}
 			echo "</ul>\n";
 
     	}
     	//Displays the profile of a person(human)
     	if (isset($_GET['bnumber'])) {
+			// CASE 2
+			// Directs to appropriate page if specific movie is clicked.
 			$bnumber = $_GET['bnumber'];
 
 			$values = array($bnumber, $bnumber);
-			// Query to display information about an individual
+			// Query to display title & release year of movie
 			$sql = "SELECT identifier,email,instrument,status,admin,humans.yr,groupid,composer,title FROM humans INNER JOIN members USING(bnumber)
 						INNER JOIN pieces WHERE bnumber=? and groupid=(select groupid from members where bnumber=?)";
 			$resultset = prepared_query($dbh,$sql,$values);
-	
+			// declare variable title for global usage
+			//$title;
 
-			// Display name, email, instrument, status, class year, current group/piece
+			// Display Group ID, Piece, Coach, Meeting Time, and Rehearsal Time
 			while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+				//global $title;
 				$identifier = $row['identifier'];
 				$email = $row['email'];
 				$instrument = $row['instrument'];
@@ -229,21 +255,26 @@
 					<p>Instrument: $instrument
 					<p>Status: $status
 					<p>Admin?: $admin
-					<p>Group: <a href='admin.php?groupid=$groupid'>$composer $title</a>\n";
+					<p>Group: <a href='admindisplay.php?groupid=$groupid'>$composer $title</a>\n";
 			}
 
 
     	}
     	//Displays the profile of a piece
     	if (isset($_GET['pid'])) {
+			// CASE 2
+			// Directs to appropriate page if specific movie is clicked.
 			$pid = $_GET['pid'];
 
+			//Show selected movie profile
 			$values = array($pid);
-			// Query to display info for piece clicked
+			// Query to display title & release year of movie
 			$sql = "SELECT title,yr,composer,currentgroup from pieces where pid=?";
 			$resultset = prepared_query($dbh,$sql,$values);
+			// declare variable title for global usage
+			//$title;
 
-			// Display title, composer, year, and current group playing
+			// Display Group ID, Piece, Coach, Meeting Time, and Rehearsal Time
 			while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){				
 				$title = $row['title'];
 				$composer = $row['composer'];
@@ -254,7 +285,7 @@
 					<p>Title: $title
 					<p>Composer: $composer
 					<p>Year: $yr
-					<p>Group: <a href='admin.php?groupid=$currentgroup'>$composer $title</a>\n";
+					<p>Group: <a href='admindisplay.php?groupid=$currentgroup'>$composer $title</a>\n";
 			}
 
     	}
@@ -264,6 +295,7 @@
   </div>
 </div>
 
+<!--XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 </div>
 
 

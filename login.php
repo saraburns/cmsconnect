@@ -1,3 +1,8 @@
+<!--
+login.php
+Sara Burns and Shelley Wang
+If a user is not logged in, they will see this screen, and can log in. -->
+
 <?php //if password matches, send them to the homepage(with appropriate info contained in session superglobal)
   //currently, we are using a canned username/pword. Eventually we'll look it up in the database
 if(isset($_REQUEST['email']) && isset($_REQUEST['password'])){
