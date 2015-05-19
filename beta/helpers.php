@@ -3,6 +3,24 @@
 //Contains various helper functions
 
 
+//times values range for 000 to 615
+	$pretty_days = array("Sunday", "Monday ", "Tuesday ", "Wednesday ", "Thursday ", "Friday ", "Saturday ");
+	
+	$pretty_times = array("7 AM", "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM",
+		 "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM");
+
+		//takes a list of ids and converts them to human readable day/times
+	function makePretty($time_list){
+		global $pretty_days, $pretty_times;
+		$formatted_times = array();
+		foreach($time_list as $t){
+			$day = $pretty_days[(int)substr($t,0,1)];
+			$time = $pretty_times[(int)substr($t,1)];
+			array_push($formatted_times,$day.$time);
+		}
+		return $formatted_times;
+	}
+
 	//alerts the new members they have been added to a group	
 			function sendEmailtoGroup($members, $subject, $message){
 				global $dbh;
@@ -20,11 +38,7 @@
 						$i++;
 				}
 					}
-					$headers  = 'MIME-Version: 1.0' . "\r\n";
-					$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-					// Additional headers
-					$headers .= 'From: Chamber Music Society <cms@example.com>' . "\r\n";
+					
 					mail($member_emails,$subject, $message, $headers);
 				}
 				

@@ -2,6 +2,24 @@
 	Sara Burns and Shelley Wang
 	This is the landing page for non-admins. -->
 <?php session_start();
+
+	require_once("MDB2.php");
+	//require_once("calhelp.php");
+	require_once("/home/cs304/public_html/php/MDB2-functions.php");
+	require_once("cmsconnect-dsn.inc");
+	$dbh = db_connect($cmsconnect_dsn);
+	
+	if(isset($_SESSION['email'])){
+		$email = $_SESSION['email'];
+		$values = array($email);
+		// Query to display title & release year of movie
+		$sql = "SELECT bnumber FROM humans where email=?";
+		$resultset = prepared_query($dbh,$sql,$values);
+		//Get user's bnumber
+		while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+			$bnumber = $row['bnumber'];
+		}
+	}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -142,12 +160,57 @@
                   <?php
                     require("choose-rehearse.php");
 
+                    // if(isset($_REQUEST['rehearsal'])){
+                    // 	echo "$_REQUEST['rehearsal']";
+                    // 	// $c = $_REQUEST['new_coach'];
+                    // 	// //insert info into group table
+                    // 	// $insert_group = "INSERT INTO groups values (0,?,null,?)";
+                    // 	// $insert = prepared_statement($dbh, $insert_group, array($_REQUEST['new_coaching_time'], $_REQUEST['new_coach']));
+                    // 	// $group_ID = query($dbh, "SELECT last_insert_id()");
+                    // 	// while($id = $group_ID->fetchRow(MDB2_FETCHMODE_ASSOC)){
+                    // 	// 	$gid = $id['last_insert_id()'];
+                    // 	// }
+                    // 	// //insert info into pieces table(currentgroup playing)
+                    // 	// $insert_into_pieces = prepared_statement($dbh, "UPDATE pieces set currentgroup = ? where pid = ?", array($gid, $_REQUEST['new_pid']));
+
+                    // 	// //add members to join table
+                    // 	// $members = explode(";",$_REQUEST['new_members']);
+                    // 	// foreach($members as $m){
+                    // 	// 	$insert_member_query = "INSERT INTO members values (?, ?)";
+                    // 	// 	$insert_member = prepared_statement($dbh, $insert_member_query, array($m, $gid));
+                    // 	// 	$in_group = "UPDATE humans set ingroup = 1 where bnumber=?";
+                    // 	// 	$update_in_group = prepared_statement($dbh, $in_group,array($m));
+                    // 	// }
+                    // 	// array_push($members, $_REQUEST['new_coach']);
+                    // 	// foreach($members as $m){
+                    // 	// 	$rm_ct_statement = "DELETE from schedule where bnumber = ? and timeid = ?";
+                    // 	// 	$remove_coaching_time = prepared_statement($dbh, $rm_ct_statement, array($m, $_REQUEST['new_coaching_time']));
+                    // 	// }
+
+                    // 	// $find_piece_query = "SELECT title, composer from pieces where pid = ?";
+                    // 	// $find_piece = prepared_query($dbh, $find_piece_query, array($_REQUEST['new_pid']));
+                    // 	// while($p = $find_piece->fetchRow(MDB2_FETCHMODE_ASSOC)){
+                    // 	// 	$t = $p['title'];
+                    // 	// 	$c = $p['composer'];
+                    // 	// }
+
+                    // 	// $coach_name = "SELECT identifier from humans where bnumber = ?";
+                    // 	// $coach_result = prepared_query($dbh, $coach_name, array($_REQUEST['new_coach']));
+                    // 	// while($cr = $coach_result->fetchRow(MDB2_FETCHMODE_ASSOC)){
+                    // 	// 	$cn = $cr['identifier'];
+                    // 	// }
+                    // 	// sendEmailtoGroup(array_slice($members,0,2), "CMS Assignment", "Hello,<br>This message has 
+                    // 	// 	been sent to inform you that you have been assigned to a new CMS group. You will be playing $t by $c, coached by $cn. Please log on to CMSConnect to find out more information. For students, please use the portal to 
+                    // 	// 	choose a rehearsal time in the next week. Thank you,<br>The CMS Administrators");
+                    // 	// echo "<p>The group has been added. An email has been sent asking members to set a rehearsal time.";
+
+                    // }
                 ?>
             </div>
 
         </form> </div>
             <!-- part of a mild form of form verification -->
-            <label id="error">Please select a time to rehearse and try again</label>
+            <!-- <label id="error">Please select a time to rehearse and try again</label> -->
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" id="redo" data-dismiss="modal">Start Over</button>
@@ -165,7 +228,52 @@
 <span class="test2">
 		<?php
 			require_once("calhelp.php");
-			//doThis();
+			if(isset($_REQUEST['rehearsal'])){
+				$rehearse=$_REQUEST['rehearsal'];
+				echo "Rehearsal is $rehearse";
+				// $c = $_REQUEST['new_coach'];
+				// //insert info into group table
+				// $insert_group = "INSERT INTO groups values (0,?,null,?)";
+				// $insert = prepared_statement($dbh, $insert_group, array($_REQUEST['new_coaching_time'], $_REQUEST['new_coach']));
+				// $group_ID = query($dbh, "SELECT last_insert_id()");
+				// while($id = $group_ID->fetchRow(MDB2_FETCHMODE_ASSOC)){
+				// 	$gid = $id['last_insert_id()'];
+				// }
+				// //insert info into pieces table(currentgroup playing)
+				// $insert_into_pieces = prepared_statement($dbh, "UPDATE pieces set currentgroup = ? where pid = ?", array($gid, $_REQUEST['new_pid']));
+
+				// //add members to join table
+				// $members = explode(";",$_REQUEST['new_members']);
+				// foreach($members as $m){
+				// 	$insert_member_query = "INSERT INTO members values (?, ?)";
+				// 	$insert_member = prepared_statement($dbh, $insert_member_query, array($m, $gid));
+				// 	$in_group = "UPDATE humans set ingroup = 1 where bnumber=?";
+				// 	$update_in_group = prepared_statement($dbh, $in_group,array($m));
+				// }
+				// array_push($members, $_REQUEST['new_coach']);
+				// foreach($members as $m){
+				// 	$rm_ct_statement = "DELETE from schedule where bnumber = ? and timeid = ?";
+				// 	$remove_coaching_time = prepared_statement($dbh, $rm_ct_statement, array($m, $_REQUEST['new_coaching_time']));
+				// }
+
+				// $find_piece_query = "SELECT title, composer from pieces where pid = ?";
+				// $find_piece = prepared_query($dbh, $find_piece_query, array($_REQUEST['new_pid']));
+				// while($p = $find_piece->fetchRow(MDB2_FETCHMODE_ASSOC)){
+				// 	$t = $p['title'];
+				// 	$c = $p['composer'];
+				// }
+
+				// $coach_name = "SELECT identifier from humans where bnumber = ?";
+				// $coach_result = prepared_query($dbh, $coach_name, array($_REQUEST['new_coach']));
+				// while($cr = $coach_result->fetchRow(MDB2_FETCHMODE_ASSOC)){
+				// 	$cn = $cr['identifier'];
+				// }
+				// sendEmailtoGroup(array_slice($members,0,2), "CMS Assignment", "Hello,<br>This message has 
+				// 	been sent to inform you that you have been assigned to a new CMS group. You will be playing $t by $c, coached by $cn. Please log on to CMSConnect to find out more information. For students, please use the portal to 
+				// 	choose a rehearsal time in the next week. Thank you,<br>The CMS Administrators");
+				// echo "<p>The group has been added. An email has been sent asking members to set a rehearsal time.";
+
+			}
 	?>
 </span>
 
@@ -235,6 +343,11 @@
 				  });
 				}
 			  });
+
+			$("#add").on('click', function(event){
+				$("input[name='rehearsal']").val($("input[name='roptions']:checked").attr("id"));
+				$("#cg").trigger("submit");
+			});
 	</script>
 <!-- Search Form -->
 	<div class="searchform">

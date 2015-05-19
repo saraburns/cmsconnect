@@ -42,17 +42,7 @@ Displays an interface where students are displayed with coaches with whom they h
 		
 
 	}
-	//takes a list of ids and converts them to human readable day/times
-	function makePretty($time_list){
-		global $pretty_days, $pretty_times;
-		$formatted_times = array();
-		foreach($time_list as $t){
-			$day = $pretty_days[(int)substr($t,0,1)];
-			$time = $pretty_times[(int)substr($t,1)];
-			array_push($formatted_times,$day.$time);
-		}
-		return $formatted_times;
-	}
+
 
 	//finds students who have matching free time and displays them in a collapsible panel under the coach
 	function findCompatibleCoach($cid){
@@ -93,11 +83,7 @@ Displays an interface where students are displayed with coaches with whom they h
 		return collapsiblePanelList($list_items, $accordion_i++);
 
 	}
-	//times values range for 000 to 615
-	$pretty_days = array("Sunday", "Monday ", "Tuesday ", "Wednesday ", "Thursday ", "Friday ", "Saturday ");
 	
-	$pretty_times = array("7 AM", "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM",
-		 "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM");
 	$coaches_query = "SELECT identifier, bnumber from humans where status='coach'";
 	$coach_result = query($dbh, $coaches_query);
 	$panels = "";

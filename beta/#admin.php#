@@ -3,9 +3,9 @@
 	This page is the admin dashboard, seen by an admin user when they first log in.
 	From here, the admin can view and search all the members of CMS, all the groups, and all the pieces
 	in the CMS library. It links to a page where they can create groups. -->
-<?php session_start(); 
-if ($_SESSION['admin'] == '0'){ header('Location: index.php', true, 303);};
-	?>
+<?php session_start();
+
+ ?>
 <!DOCTYPE html>
 <html lang="en">
  	<head>

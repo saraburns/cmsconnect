@@ -29,11 +29,9 @@ function findPieces($instrts){
 	$instrt_list= array_replace(array_fill(0,5,null), $instrts);
 	$length = count($instrts);
 	$pieces = "select * from instrumentation inner join pieces using (pid) 
-	where instrument in (?,?,?,?,?) group by pid having count(*) = ?";
-	//there was no way to insert ths list using a prepared query
-	//we figured the security risk was minor, since the field is not input by the user
+	where instrument in (?,?,?,?,?) group by pid having count(*) = ? and num_inst = ?";
 	$pieces_query = prepared_query($dbh,$pieces,array($instrt_list[0], $instrt_list[1], $instrt_list[2], $instrt_list[3], 
-		$instrt_list[4], $length));
+		$instrt_list[4], $length, $length));
 
 	while($piece = $pieces_query->fetchRow(MDB2_FETCHMODE_ASSOC)){
 		$pid = $piece['pid'];

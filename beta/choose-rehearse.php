@@ -22,26 +22,15 @@ Displays an interface for users to select from compatible times in their schedul
     	$email = $_SESSION['email'];
     	$values = array($email);
     	// Query to display title & release year of movie
-    	$sql = "SELECT bnumber FROM humans where email=?";
+    	$sql = "SELECT bnumber,ingroup FROM humans where email=?";
     	$resultset = prepared_query($dbh,$sql,$values);
     	//Get user's bnumber
     	while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     		$bnumber = $row['bnumber'];
+    		$ingroup = $row['ingroup'];
     	}
     }
-	//connect to the db and return a db handle
-	$members = array();
-	$sql = "SELECT bnumber FROM members WHERE groupid=(SELECT groupid FROM members WHERE bnumber=?)";
-	$values = array($bnumber);
-	$resultset = prepared_query($dbh,$sql,$values);
-	//Get user's bnumber
-	while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
-		$members[] = $row['bnumber'];
-		//echo "array_values($members)";
-	}
-	foreach ($members as $item) {
-    echo $item;
-}
+
 	function findCompatible($people){
 	global $dbh;
 	$times= array();
@@ -69,7 +58,7 @@ Displays an interface for users to select from compatible times in their schedul
 		$tid = $time['timeid'];
 		$times[$tid] = makePretty($tid);
 	}
-	echo "<h4>".$heading;
+	echo "<h4>$heading";
 	return $times;
 }
 //converts time ids to human readable days and times
@@ -99,7 +88,7 @@ function binCoef($n){
 }
 //formats the availalble times as an unordered list
 function formatPieces($pieces_array){
-	$formatted =  "<ul>";
+	$formatted =  "<input type='hidden' name ='rehearsal'><ul>";
 	$i = 0;
 	foreach($pieces_array as $tid=>$time){
 		if($i > 0){
@@ -111,10 +100,22 @@ function formatPieces($pieces_array){
   	}
   	$i++;
 	}
-	$formatted = $formatted."</ul>";
+	$formatted = $formatted."</ul></input>";
 	return $formatted;
 
 }
-echo "<h3>Finally, pick a rehearsal time.";
+if($ingroup==1){
+	$members = array();
+	$sql = "SELECT bnumber FROM members WHERE groupid=(SELECT groupid FROM members WHERE bnumber=?)";
+	$values = array($bnumber);
+	$resultset = prepared_query($dbh,$sql,$values);
+	//Get user's bnumber
+	while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+		$members[] = $row['bnumber'];
+	}
+echo "<h3>Pick a rehearsal time.\n";
 echo formatPieces(findCompatible($members));
+}else{
+	echo "You are not yet in a group";
+}
 ?>

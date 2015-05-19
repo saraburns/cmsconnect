@@ -25,7 +25,7 @@ if(isset($_REQUEST['email']) && isset($_REQUEST['password'])){
  $password = $_REQUEST['password'];
  $values = array($email, $password);
  $homepage = 'people.php';
- $sql = "SELECT email,password,admin FROM humans WHERE email=? AND password=?";
+ $sql = "SELECT email,password,admin FROM humans WHERE email=? AND password=password(?)";
 
  $resultset = prepared_query($dbh,$sql,$values);
 $nr = $resultset->numRows();
@@ -34,9 +34,9 @@ if ($nr >= 1) {
 	session_start();
       $_SESSION['email'] = $email;
 	while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
-		$admin = $row['admin'];
+		$_SESSION['admin'] = $row['admin'];
 	}
-	if ($admin==1){
+	if ($_SESSION['admin']==1){
 		$homepage = 'admin.php';
 	}else{
 		$homepage = 'people.php';
